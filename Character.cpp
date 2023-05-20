@@ -2,21 +2,42 @@
 
 std::vector<Character*> Character::chars_list;
 
-Character::Character(std::string name) {
-	this->name = name;
-	this->pos_in_world.x = 0;
-	this->pos_in_world.y = 0;
 
-	//this->sprite = new sf::Sprite();
-
-	Character::chars_list.push_back(this);
-
-	sprite = new AnimatedSprite();
+void Character::moveTo(float dx, float dy) {
+	if (dx != 0)
+		moveSingleAxis(dx, 0);
+	if (dy != 0)
+		moveSingleAxis(0, dy);
 }
 
-void Character::Move(float dx, float dy) {
-	velocity.x = dx * speed;
-	velocity.y = dy * speed;
+void Character::moveSingleAxis(float dx, float dy) {
+	velocity.x = dx * speed * 0.05;
+	velocity.y = dy * speed * 0.05;
+
+	hitbox->x += velocity.x;
+	hitbox->y += velocity.y;
+
+	for (Character* chara : chars_list) {
+		if (chara != this) {
+			if (hitbox) {
+				if (chara->hitbox) {
+					if (hitbox->intersects(*chara->hitbox)) {
+						if (dx > 0)
+							hitbox->x = chara->hitbox->x - chara->hitbox->width;
+
+						if (dx < 0)
+							hitbox->x = chara->hitbox->right();
+						
+						if (dy > 0)
+							hitbox->y = chara->hitbox->y - chara->hitbox->height;
+
+						if (dy < 0)
+							hitbox->y = chara->hitbox->bottom();
+					}
+				}
+			}
+		}
+	}
 }
 
 void Character::setObject(Object2D& obj)
@@ -24,19 +45,26 @@ void Character::setObject(Object2D& obj)
 	object = &obj;
 }
 
-void Character::Show(sf::RenderWindow & window) {
-	pos_in_world.x += velocity.x;
-	pos_in_world.y += velocity.y;
+void Character::draw(sf::RenderWindow& window) {
+	window.draw(*rr);
+}
 
-	if (object != nullptr) {
-		object->position = Vector2(pos_in_world.x, pos_in_world.y);
+void Character::update(sf::Time& dt) {
+	if (hitbox) {
+		pos_in_world.x = hitbox->x - (hitbox->width / 2);
+		pos_in_world.y = hitbox->y - (hitbox->height / 2);
 
-		if (object->intersection != nullptr)
-			printf("%a", &object->intersection);
+		rr->setPosition(pos_in_world.x, pos_in_world.y);
+		rr->setSize(sf::Vector2f(hitbox->width, hitbox->height));
+		rr->setFillColor(sf::Color::Transparent);
+		rr->setOutlineThickness(1.0);
+		rr->setOutlineColor(sf::Color::Green);
 	}
-		
 
-	this->sprite->setPosition(this->pos_in_world);
+	sprite->setPosition(pos_in_world);
+	sprite->PlayAnimation(true);
+}
 
-	this->sprite->PlayAnimation(true);
+std::vector<Character*> Character::getCharactersList() {
+	return chars_list;
 }

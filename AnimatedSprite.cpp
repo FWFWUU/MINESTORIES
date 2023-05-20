@@ -1,7 +1,9 @@
 #include "AnimatedSprite.h"
 
+std::vector<sf::Sprite*> AnimatedSprite::sprites_list;
+
 AnimatedSprite::AnimatedSprite() {
-	
+	sprites_list.push_back(this);
 }
 
 void AnimatedSprite::AddRegion(sf::IntRect region) {
@@ -33,9 +35,13 @@ void AnimatedSprite::PlayAnimation(bool loop) {
 		if (region_index < regions.size())
 		{
 			setTextureRect(regions[region_index]);
-			//std::cout << getTextureRect().width << "<>" << getTextureRect().left << std::endl;
-
-			setOrigin(getTextureRect().width / 2, getTextureRect().height / 2);
+			
+			//setOrigin(getTextureRect().width / 2, getTextureRect().height / 2);
 		}
 	}	
+}
+
+std::vector<sf::Sprite*> AnimatedSprite::getSpritesList()
+{
+	return sprites_list;
 }

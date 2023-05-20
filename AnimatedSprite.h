@@ -6,6 +6,9 @@
 class AnimatedSprite :
 	public sf::Sprite
 {
+private:
+	static std::vector<sf::Sprite*> sprites_list;
+
 public:
 	std::vector<sf::IntRect> regions;
 
@@ -21,5 +24,7 @@ public:
 	void AddRegion(sf::IntRect region);
 	void AddTextureImage(sf::Texture &texture);
 	void PlayAnimation(bool loop);
+
+	static std::vector<sf::Sprite*> getSpritesList();
 };
 

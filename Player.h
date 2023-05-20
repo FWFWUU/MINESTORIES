@@ -6,6 +6,6 @@ class Player :
 	public Character
 {
 public:
-	Player();
+	Player(std::string name, sf::Vector2f i_pos);
 };
 
