@@ -2,8 +2,8 @@
 
 Player::Player(): Character("player") {
 	Object2D* obj = new Object2D({
-		Vector2(-5, -5),
-		Vector2(5, -5),
+		Vector2(-10, -5),
+		Vector2(10, -5),
 		Vector2(5, 5),
 		Vector2(-5, 5),
 		}, Vector2(pos_in_world.x, pos_in_world.y));

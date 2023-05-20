@@ -95,11 +95,15 @@ public:
 			Axis interA = project(axis);
 			Axis interB = obj.project(axis);
 
-			if (!interA.max < interB.min || interB.max < interA.min)
+			if (!overlap(interA, interB))
 				return false;
 		}
 
 		return true;
+	}
+
+	bool overlap(Axis &a, Axis &b) {
+		return !(a.max < b.min || b.max < a.min);
 	}
 
 	void update(static const std::vector<Object2D*>& objects) {
