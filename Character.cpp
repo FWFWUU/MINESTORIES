@@ -11,8 +11,8 @@ void Character::moveTo(float dx, float dy) {
 }
 
 void Character::moveSingleAxis(float dx, float dy) {
-	velocity.x = dx * speed * 0.05;
-	velocity.y = dy * speed * 0.05;
+	velocity.x = dx * speed;
+	velocity.y = dy * speed;
 
 	hitbox->x += velocity.x;
 	hitbox->y += velocity.y;

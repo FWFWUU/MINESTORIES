@@ -9,6 +9,8 @@
 #include "Player.h"
 #include "Camera.h"
 #include "Physics.h"
+#include "Font.h"
+#include "SpriteBatch.h"
 
 const std::string GAME_NAME = "MINESTORIES";
 const std::vector<std::string> SUBTITLES{
@@ -24,7 +26,6 @@ public:
 	sf::IntRect cur_tex_rect;
 
 	Player* player;
-	Player* clone;
 
 	int count_spr_sort = 0;
 	bool paused = false;
@@ -34,6 +35,10 @@ public:
 	sf::Clock deltaTime;
 
 	Physics physics;
+
+	Font* testFont;
+
+	SpriteBatch* batch;
 	
 
 	Game() {
@@ -61,13 +66,12 @@ public:
 
 		player = new Player("player", sf::Vector2f(10, 10));
 
-		clone = new Player("NPC", sf::Vector2f(0, 0));
-
-		//sprites.push_back(player->sprite);
-		//sprites.push_back(clone->sprite);
-
 		camera = new Camera();
 		camera->view->setSize(window->getSize().x / 2, window->getSize().y / 2);
+
+		testFont = new Font("Assets/font.png");
+
+		batch = new SpriteBatch(window);
 	}
 
 	void sort_sprites() {
@@ -86,7 +90,10 @@ public:
 	}
 
 	void startWorld() {
+		//start world here
 
+		Player* clone;
+		clone = new Player("NPC", sf::Vector2f(0, 0));
 	}
 
 	void update(sf::Time dt) {
@@ -118,6 +125,20 @@ public:
 			chara->draw(*window);
 			chara->update(dt);
 		}
+
+		BoundingBox bb = BoundingBox(3, 3, curSprite.getPosition().x, curSprite.getPosition().y);
+
+		//batch->reset();
+
+		batch->draw(cur_texture, sf::FloatRect(32, 32, 32, 32), sf::IntRect(0, 0, 8, 8));
+
+		if (player->hitbox->intersects(bb)) {
+			batch->draw(cur_texture, sf::FloatRect(bb.x - 5, bb.y - 5, 32, 32), sf::IntRect(0, 0, 8, 8));
+		}
+		
+		testFont->drawString(*batch, "haaaaaaaaaai", sf::Vector2f(0, 0));
+
+		//batch->show(*window);
 	}
 
 	void Listen(sf::Event& event) {
@@ -149,7 +170,7 @@ public:
 			curSprite.setPosition(window->mapPixelToCoords(sf::Mouse::getPosition(*window)));
 
 			window->setView(*camera->view);
-
+			//batch->display();
 			window->clear();
 
 			update(deltaTime.restart());
@@ -171,6 +192,8 @@ public:
 
 				this->window->draw(triangles);
 			}*/
+
+			//testFont->drawString(*window, "Hello", sf::Vector2f(0, 0));
 
 			window->draw(curSprite);
 			window->display();

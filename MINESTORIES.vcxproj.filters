@@ -33,6 +33,12 @@
     <ClCompile Include="Physics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Font.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteBatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\test.png">
@@ -45,6 +51,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="Assets\w_icon.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Assets\font.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
@@ -62,6 +71,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Physics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Font.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteBatch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

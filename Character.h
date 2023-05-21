@@ -17,16 +17,21 @@ public:
 	sf::Vector2f impulse;
 	sf::Vector2f velocity;
 	AnimatedSprite* sprite;
-	BoundingBox* hitbox;
-	sf::RectangleShape* rr;
+	BoundingBox* hitbox = nullptr;
+	sf::RectangleShape* rr = nullptr;
 
-	float speed = 20.0f;
+	float speed = 2.0f;
+
+	static const enum Faces {
+		DirectionForward,
+		DirectionBackward,
+		DirectionLeft,
+		DirectionRught
+	};
+
+	uint8_t faceDirection = DirectionBackward;
 
 	Character(std::string name, sf::Vector2f i_pos) : name(name), pos_in_world(i_pos) {
-		this->name = name;
-
-		//this->sprite = new sf::Sprite();
-
 		Character::chars_list.push_back(this);
 
 		sprite = new AnimatedSprite();

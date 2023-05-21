@@ -1,0 +1,1 @@
+Adicionar um painel lateral superior com as informações de um personagem tocado com o mouse! Nome e atributos.
