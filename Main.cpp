@@ -11,17 +11,19 @@
 #include "Physics.h"
 #include "Font.h"
 #include "SpriteBatch.h"
+#include "DialogBox.h"
+#include "Location.h"
+#include "Resources.h"
 
-const std::string GAME_NAME = "MINESTORIES";
+const std::string GAME_NAME = "Mine Stories";
 const std::vector<std::string> SUBTITLES{
-	"Revenge", "Subjection Edition", "Go! Go! Go!"
+	"Pirate edition", "c++ sucks", ":(", "Ai, guapitoo!!"
 };
 
 class Game {
 public:
 	sf::RenderWindow* window;
 	sf::Sprite curSprite;
-	sf::Texture cur_texture;
 	sf::Image * window_icon;
 	sf::IntRect cur_tex_rect;
 
@@ -36,10 +38,13 @@ public:
 
 	Physics physics;
 
-	Font* testFont;
-
 	SpriteBatch* batch;
 	
+	DialogBox* dialog;
+
+	Location* location;
+
+	float framesPerSeconds = 60;
 
 	Game() {
 		srand(time(NULL)); //generate random seed
@@ -48,19 +53,20 @@ public:
 
 		window = new sf::RenderWindow(sf::VideoMode(1024, 600), GAME_NAME + ": " + SUBTITLES[rand_subtitle_pos]);
 		window->setVerticalSyncEnabled(true);
-		window->setFramerateLimit(60.0);
+		window->setFramerateLimit(framesPerSeconds);
+
+		Resources::Resources();
 
 		window_icon = new sf::Image();
-		window_icon->loadFromFile("Assets/w_icon.png");
+		window_icon->loadFromFile("Assets/Textures/w_icon.png");
 		
 		window->setIcon(16, 16, window_icon->getPixelsPtr());
 
 		cur_tex_rect.height = 8;
 		cur_tex_rect.width = 8;
 		
-		cur_texture.loadFromFile("Assets/icons.png", this->cur_tex_rect);
-
-		curSprite.setTexture(cur_texture);
+		curSprite.setTexture(*Resources::IconsTexture);
+		curSprite.setTextureRect(cur_tex_rect);
 		curSprite.setScale(sf::Vector2f(1.2, 1.2));
 		
 
@@ -69,9 +75,19 @@ public:
 		camera = new Camera();
 		camera->view->setSize(window->getSize().x / 2, window->getSize().y / 2);
 
-		testFont = new Font("Assets/font.png");
+		//res = new Resources;
+
+		
 
 		batch = new SpriteBatch(window);
+
+		dialog = new DialogBox(batch, Resources::DefaultFont);
+		dialog->loadDialog("Texts/Dialogs001.txt");
+
+		location = new Location;
+		location->load("Assets/Locations/StartMap.tmx");
+
+		
 	}
 
 	void sort_sprites() {
@@ -93,10 +109,12 @@ public:
 		//start world here
 
 		Player* clone;
-		clone = new Player("NPC", sf::Vector2f(0, 0));
+		clone = new Player("npc", sf::Vector2f(-30, -30));
 	}
 
-	void update(sf::Time dt) {
+	void update(float dt) {
+		location->draw(batch);
+
 		physics.update(dt);
 
 		camera->FollowCharacter(*player, *window, dt);
@@ -105,16 +123,16 @@ public:
 
 		sf::Vector2f impulse;
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 			impulse.x = -1;
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 			impulse.x = 1;
 		else
 			impulse.x = 0;
 		
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
 			impulse.y = -1;
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
 			impulse.y = 1;
 		else
 			impulse.y = 0;
@@ -124,21 +142,21 @@ public:
 		for (Character* chara : Character::getCharactersList()) {
 			chara->draw(*window);
 			chara->update(dt);
+
+			BoundingBox m(1, 1, curSprite.getPosition().x, curSprite.getPosition().y);
+
+			if (chara->hitbox->intersects(m)) {
+				Resources::DefaultFont->drawString(*batch, "<" + chara->name + ">", chara->getPivot() - sf::Vector2f(0, 16), 8, sf::Color::Yellow);
+
+				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+					dialog->setCurrentDialog(8, 14);
+				}
+					//dialog.showDialog(0); testFont->drawString(*batch, "its a dialog box", window->mapPixelToCoords(sf::Vector2i(0, 600 / 2)), 8, sf::Color::Yellow);
+			}
+
 		}
 
-		BoundingBox bb = BoundingBox(3, 3, curSprite.getPosition().x, curSprite.getPosition().y);
-
-		//batch->reset();
-
-		batch->draw(cur_texture, sf::FloatRect(32, 32, 32, 32), sf::IntRect(0, 0, 8, 8));
-
-		if (player->hitbox->intersects(bb)) {
-			batch->draw(cur_texture, sf::FloatRect(bb.x - 5, bb.y - 5, 32, 32), sf::IntRect(0, 0, 8, 8));
-		}
-		
-		testFont->drawString(*batch, "haaaaaaaaaai", sf::Vector2f(0, 0));
-
-		//batch->show(*window);
+		dialog->update();
 	}
 
 	void Listen(sf::Event& event) {
@@ -157,6 +175,13 @@ public:
 		if (event.type == sf::Event::LostFocus) {
 			paused = true;
 		}
+
+		if (event.type == sf::Event::MouseButtonPressed) {
+			if (event.mouseButton.button == sf::Mouse::Left)
+				if (dialog->isOnConversation)
+					if (dialog->touchNext == true)
+						dialog->nextDialogue();
+		}
 	}
 
 	void run() {
@@ -170,30 +195,17 @@ public:
 			curSprite.setPosition(window->mapPixelToCoords(sf::Mouse::getPosition(*window)));
 
 			window->setView(*camera->view);
-			//batch->display();
+			
 			window->clear();
 
-			update(deltaTime.restart());
+			float framerate = 1 / deltaTime.getElapsedTime().asSeconds();
+			//deltaTime.restart();
 
-			/*for (int i = 0; i < Object2D::getObjects().size(); i++) {
-				Object2D* obj = Object2D::getObjects()[i % Object2D::getObjects().size()];
+			update(deltaTime.restart().asSeconds());
 
+			Resources::DefaultFont->drawString(*batch, std::to_string((int)framerate), window->mapPixelToCoords(sf::Vector2i(0, 0)), 8, sf::Color(255, 255, 255, 155));
 
-				sf::VertexArray triangles(sf::Quads, obj->vertices.size());
-
-				for (int j = 0; j < obj->vertices.size(); j++) {
-					triangles[j].position = sf::Vector2f(obj->vertices[j].x + obj->position.x, obj->vertices[j].y + obj->position.y);
-					
-					if (obj->intersection)
-						triangles[j].color = sf::Color::Red;
-					else
-						triangles[j].color = sf::Color::Blue;
-				}
-
-				this->window->draw(triangles);
-			}*/
-
-			//testFont->drawString(*window, "Hello", sf::Vector2f(0, 0));
+			//std::cout << framerate << std::endl;
 
 			window->draw(curSprite);
 			window->display();

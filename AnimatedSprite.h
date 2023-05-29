@@ -22,7 +22,7 @@ public:
 	AnimatedSprite();
 
 	void AddRegion(sf::IntRect region);
-	void AddTextureImage(sf::Texture &texture);
+	void AddTextureImage(sf::Texture* texture);
 	void PlayAnimation(bool loop);
 
 	static std::vector<sf::Sprite*> getSpritesList();

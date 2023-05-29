@@ -5,6 +5,7 @@
 
 #include "AnimatedSprite.h"
 #include "Physics.h"
+#include "Resources.h"
 
 class Character {
 private:
@@ -42,8 +43,10 @@ public:
 	void moveTo(float dx, float dy);
 	void setObject(Object2D& object);
 	void draw(sf::RenderWindow& window);
-	void update(sf::Time& dt);
+	void update(float dt);
 	void moveSingleAxis(float dx, float dy);
+
+	sf::Vector2f getPivot() const;
 
 	static std::vector<Character*> getCharactersList();
 };

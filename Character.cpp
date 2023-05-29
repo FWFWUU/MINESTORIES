@@ -40,6 +40,11 @@ void Character::moveSingleAxis(float dx, float dy) {
 	}
 }
 
+sf::Vector2f Character::getPivot() const
+{
+	return sprite->getOrigin() + sf::Vector2f(hitbox->x, hitbox->y);
+}
+
 void Character::setObject(Object2D& obj)
 {
 	object = &obj;
@@ -49,19 +54,21 @@ void Character::draw(sf::RenderWindow& window) {
 	window.draw(*rr);
 }
 
-void Character::update(sf::Time& dt) {
+void Character::update(float dt) {
 	if (hitbox) {
-		pos_in_world.x = hitbox->x - (hitbox->width / 2);
-		pos_in_world.y = hitbox->y - (hitbox->height / 2);
+		//pos_in_world.x = hitbox->x - (hitbox->width / 2);
+		//pos_in_world.y = hitbox->y - (hitbox->height / 2);
 
-		rr->setPosition(pos_in_world.x, pos_in_world.y);
+		rr->setPosition(getPivot());
 		rr->setSize(sf::Vector2f(hitbox->width, hitbox->height));
 		rr->setFillColor(sf::Color::Transparent);
 		rr->setOutlineThickness(1.0);
 		rr->setOutlineColor(sf::Color::Green);
+
+		sprite->setPosition(sf::Vector2f(hitbox->x, hitbox->y));
+
 	}
 
-	sprite->setPosition(pos_in_world);
 	sprite->PlayAnimation(true);
 }
 

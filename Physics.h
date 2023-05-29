@@ -116,7 +116,7 @@ public:
 	Physics();
 
 	void world();
-	void update(sf::Time dt);
+	void update(float dt);
 	
 };
 
@@ -207,8 +207,8 @@ public:
 		return !(a.max < b.min || b.max < a.min);
 	}
 
-	void update(static const std::vector<Object2D*>& objects, sf::Time dt) {
-		position += velocity * dt.asSeconds();
+	void update(static const std::vector<Object2D*>& objects, float dt) {
+		position += velocity * dt;
 		for (Object2D* other : objects) {
 			if (other != this) {
 				intersection = nullptr;

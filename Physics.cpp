@@ -8,7 +8,7 @@ void Physics::world() {
 	
 }
 
-void Physics::update(sf::Time dt) {
+void Physics::update(float dt) {
 	for (Object2D * object: Object2D::getObjects()) {
 		object->update(Object2D::getObjects(), dt);
 	}

@@ -10,8 +10,8 @@ void AnimatedSprite::AddRegion(sf::IntRect region) {
 	regions.push_back(region);
 }
 
-void AnimatedSprite::AddTextureImage(sf::Texture & texture) {
-	setTexture(texture, true);
+void AnimatedSprite::AddTextureImage(sf::Texture* texture) {
+	setTexture(*texture, true);
 }
 
 void AnimatedSprite::PlayAnimation(bool loop) {

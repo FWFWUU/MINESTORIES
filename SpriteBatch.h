@@ -6,10 +6,11 @@ class SpriteBatch
 public:
 	SpriteBatch(sf::RenderWindow* window);
 
-	void draw(sf::Texture& texture, sf::FloatRect rect, sf::IntRect region);
+	void draw(sf::Texture* texture, sf::FloatRect rect, sf::IntRect region, sf::Color color = sf::Color::White);
 	void reset();
 	void show(sf::RenderWindow& window);
 	void display();
+	sf::RenderWindow* getWindow();
 
 private:
 	sf::VertexArray varray;

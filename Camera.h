@@ -16,6 +16,6 @@ public:
 	float smooth_speed = 5.f;
 
 	Camera();
-	void FollowCharacter(Character& chara, sf::RenderWindow& window, sf::Time dt);
+	void FollowCharacter(Character& chara, sf::RenderWindow& window, float dt);
 };
 
