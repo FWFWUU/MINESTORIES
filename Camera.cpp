@@ -7,11 +7,11 @@ Camera::Camera() {
 
 void Camera::FollowCharacter(Character& chara, sf::RenderWindow& window, float dt) {
 	
-	//direction = sf::Vector2f(0, 0);
+	direction = sf::Vector2f(0, 0);
 
 	sf::Vector2f chara_pos_screen(window.mapCoordsToPixel(chara.getPivot()));
 
-	if ((chara_pos_screen.x - 32) < std::floor(view->getSize().x - camera_view_margin)) {
+	/*if ((chara_pos_screen.x - 32) < std::floor(view->getSize().x - camera_view_margin)) {
 		direction.x = -1;
 	}
 	if ((chara_pos_screen.x + 32) > std::floor(view->getSize().x + camera_view_margin)) {
@@ -21,6 +21,19 @@ void Camera::FollowCharacter(Character& chara, sf::RenderWindow& window, float d
 		direction.y = -1;
 	}
 	if ((chara_pos_screen.y + 32) > std::floor(view->getSize().y + (camera_view_margin / 2))) {
+		direction.y = 1;
+	}*/
+
+	if ((chara_pos_screen.x - 32) < 0) {
+		direction.x = -1;
+	}
+	if ((chara_pos_screen.x + 32) > 0) {
+		direction.x = 1;
+	}
+	if ((chara_pos_screen.y - 32) < 0) {
+		direction.y = -1;
+	}
+	if ((chara_pos_screen.y + 32) > 0) {
 		direction.y = 1;
 	}
 
@@ -39,9 +52,9 @@ void Camera::FollowCharacter(Character& chara, sf::RenderWindow& window, float d
 
 	//view->setCenter(chara.pos_in_world);
 
-	rect_draw->setSize(sf::Vector2f(camera_view_margin * 2, camera_view_margin));
+	rect_draw->setSize(sf::Vector2f(view->getSize().x / 2, view->getSize().y / 2));
 	rect_draw->setPosition(view->getCenter());
-	rect_draw->setOrigin(sf::Vector2f((camera_view_margin * 2) / 2, camera_view_margin / 2));
+	rect_draw->setOrigin(sf::Vector2f(rect_draw->getSize().x / 2, rect_draw->getSize().y / 2));
 	rect_draw->setOutlineColor(sf::Color::Blue);
 	rect_draw->setOutlineThickness(1.0);
 	rect_draw->setFillColor(sf::Color::Transparent);

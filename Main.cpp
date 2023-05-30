@@ -15,9 +15,9 @@
 #include "Location.h"
 #include "Resources.h"
 
-const std::string GAME_NAME = "Mine Stories";
+const std::string GAME_NAME = "Minestories";
 const std::vector<std::string> SUBTITLES{
-	"Pirate edition", "c++ sucks", ":(", "Ai, guapitoo!!"
+	"Pirate edition", "c++ sucks", ":(", "Eita, guapitoo!!"
 };
 
 class Game {
@@ -42,17 +42,21 @@ public:
 	
 	DialogBox* dialog;
 
-	Location* location;
+	LocationManager* locationManager;
 
 	float framesPerSeconds = 60;
+
+	bool verticalSync = false;
+
+	float framerate = 0;
 
 	Game() {
 		srand(time(NULL)); //generate random seed
 
 		int rand_subtitle_pos = rand() % SUBTITLES.size();
 
-		window = new sf::RenderWindow(sf::VideoMode(1024, 600), GAME_NAME + ": " + SUBTITLES[rand_subtitle_pos]);
-		window->setVerticalSyncEnabled(true);
+		window = new sf::RenderWindow(sf::VideoMode(1024, 640), GAME_NAME + ": " + SUBTITLES[rand_subtitle_pos]);
+		window->setVerticalSyncEnabled(verticalSync);
 		window->setFramerateLimit(framesPerSeconds);
 
 		Resources::Resources();
@@ -77,20 +81,19 @@ public:
 
 		//res = new Resources;
 
-		
-
 		batch = new SpriteBatch(window);
 
 		dialog = new DialogBox(batch, Resources::DefaultFont);
 		dialog->loadDialog("Texts/Dialogs001.txt");
 
-		location = new Location;
-		location->load("Assets/Locations/StartMap.tmx");
+		locationManager = new LocationManager;
+		locationManager->loadLocation("Assets/Locations/StartMap.tmx", "Start");
+		locationManager->currentLocation = "Start";
 
 		
 	}
 
-	void sort_sprites() {
+	void sortSprites() {
 		for (int i = 0; i < AnimatedSprite::getSpritesList().size(); i++) {
 			if (i + 1 < AnimatedSprite::getSpritesList().size()) {
 				if (AnimatedSprite::getSpritesList()[i]->getLocalBounds().intersects(AnimatedSprite::getSpritesList()[i + 1]->getLocalBounds())) {
@@ -113,13 +116,41 @@ public:
 	}
 
 	void update(float dt) {
-		location->draw(batch);
+		//locationManager->draw(window);
+
+		for (int i = 0; i < locationManager->locations.size(); i++) {
+			if (locationManager->locations[i]->name == locationManager->currentLocation) {
+				locationManager->locations[i]->draw();
+
+				for (LocationLayer* layer : locationManager->locations[i]->layers) {
+					window->draw(layer->vArr, &locationManager->locations[i]->texture);
+
+					if (layer->name == "Grass")
+						sortSprites();
+				}
+
+				camera->FollowCharacter(*player, *window, dt);
+
+				if ((camera->view->getSize().x / 2) + camera->view->getCenter().x > locationManager->locations[i]->mapWidth * locationManager->locations[i]->tileSizeX) {
+					camera->view->setCenter((locationManager->locations[i]->mapWidth * locationManager->locations[i]->tileSizeX) - (camera->view->getSize().x / 2), camera->view->getCenter().y);
+				}
+
+				if (camera->view->getCenter().x < (camera->view->getSize().x / 2) + 0) {
+					camera->view->setCenter((camera->view->getSize().x / 2), camera->view->getCenter().y);
+				}
+
+				if ((camera->view->getSize().y) + (camera->view->getCenter().y) > locationManager->locations[i]->mapHeight * locationManager->locations[i]->tileSizeY) {
+					camera->view->setCenter(camera->view->getCenter().x, (locationManager->locations[i]->mapHeight * locationManager->locations[i]->tileSizeY) - (camera->view->getSize().y));
+				}
+
+				if (camera->view->getCenter().y < (camera->view->getSize().y / 2) + 0) {
+					camera->view->setCenter(camera->view->getCenter().x, (camera->view->getSize().y / 2));
+				}
+			}
+		}
 
 		physics.update(dt);
-
-		camera->FollowCharacter(*player, *window, dt);
 		
-		sort_sprites();
 
 		sf::Vector2f impulse;
 
@@ -151,12 +182,13 @@ public:
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 					dialog->setCurrentDialog(8, 14);
 				}
-					//dialog.showDialog(0); testFont->drawString(*batch, "its a dialog box", window->mapPixelToCoords(sf::Vector2i(0, 600 / 2)), 8, sf::Color::Yellow);
 			}
 
 		}
 
 		dialog->update();
+
+		Resources::DefaultFont->drawString(*batch, std::to_string((int)framerate), window->mapPixelToCoords(sf::Vector2i(0, 0)), 8, sf::Color(255, 255, 255, 155));
 	}
 
 	void Listen(sf::Event& event) {
@@ -198,16 +230,12 @@ public:
 			
 			window->clear();
 
-			float framerate = 1 / deltaTime.getElapsedTime().asSeconds();
-			//deltaTime.restart();
+			framerate = 1 / deltaTime.getElapsedTime().asSeconds();
 
-			update(deltaTime.restart().asSeconds());
-
-			Resources::DefaultFont->drawString(*batch, std::to_string((int)framerate), window->mapPixelToCoords(sf::Vector2i(0, 0)), 8, sf::Color(255, 255, 255, 155));
-
-			//std::cout << framerate << std::endl;
+			update(deltaTime.restart().asSeconds());	
 
 			window->draw(curSprite);
+
 			window->display();
 		}
 	}

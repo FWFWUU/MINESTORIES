@@ -5,13 +5,14 @@ SpriteBatch::SpriteBatch(sf::RenderWindow* window)
 	//rtext.create(1024, 600);
 
 	rwindow = window;
+
+	varr.setPrimitiveType(sf::Quads);
+	varr.resize(4);
 }
 
 void SpriteBatch::draw(sf::Texture* texture, sf::FloatRect rect, sf::IntRect region, sf::Color color)
 {
-	sf::VertexArray varray(sf::Quads, 4);
-
-	sf::RenderStates states;
+	static sf::VertexArray varray(sf::Quads, 4);
 
 	varray[0].position = sf::Vector2f(0, 0) + sf::Vector2f(rect.left, rect.top);
 	varray[1].position = sf::Vector2f(rect.width, 0) + sf::Vector2f(rect.left, rect.top);

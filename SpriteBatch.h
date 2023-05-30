@@ -13,7 +13,7 @@ public:
 	sf::RenderWindow* getWindow();
 
 private:
-	sf::VertexArray varray;
+	sf::VertexArray varr;
 	sf::RenderTexture rtext;
 	sf::Sprite sprite;
 	sf::RenderWindow* rwindow = nullptr;
