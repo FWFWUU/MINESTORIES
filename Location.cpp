@@ -53,7 +53,7 @@ void Location::load(const char* location_file, const char* location_name)
 	
 }
 
-void Location::draw()
+void Location::build()
 {
 	for (LocationLayer* layer : layers) {
 		int xp = 0;
@@ -68,12 +68,11 @@ void Location::draw()
 				}
 			}
 			else {
-				//if (std::stoi(strTileID) == 85) {
-				//b->draw(Resources::TerrainTexture, sf::FloatRect(xp * tileSizeX, yp * tileSizeY, tileSizeX, tileSizeY), sf::IntRect((std::stoi(strTileID) - 1) * tileSizeX, 0, 16, 16));
-
 				if (std::stoi(strTileID) != 0)
 					drawTile(layer->vArr, sf::Vector2i(xp, yp), sf::IntRect((std::stoi(strTileID) - 1) * tileSizeX, 0, 16, 16));
-
+				else
+					drawTile(layer->vArr, sf::Vector2i(xp, yp), sf::IntRect((std::stoi(strTileID) - 1) * tileSizeX, 0, 16, 16), sf::Color(0,0,0,0));
+				
 
 				if (xp + 1 < mapWidth) {
 					xp++;
@@ -90,7 +89,7 @@ void Location::draw()
 	}
 }
 
-void Location::drawTile(sf::VertexArray& vArr, sf::Vector2i pos, sf::IntRect region)
+void Location::drawTile(sf::VertexArray& vArr, sf::Vector2i pos, sf::IntRect region, sf::Color albedo)
 {
 	sf::Vertex* v = &vArr[(pos.x + pos.y * mapWidth) * 4]; // vArr[[v0, v1, v2, v3], [v0, v1, v2, v3]]
 
@@ -99,16 +98,63 @@ void Location::drawTile(sf::VertexArray& vArr, sf::Vector2i pos, sf::IntRect reg
 	v[2].position = sf::Vector2f(tileSizeX, tileSizeY) + sf::Vector2f(pos.x * 16, pos.y * 16);
 	v[3].position = sf::Vector2f(0, tileSizeY) + sf::Vector2f(pos.x * 16, pos.y * 16);
 
-	//v[0].color = sf::Color::Red;
-	//v[1].color = sf::Color::Blue;
-	//v[2].color = sf::Color::Green;
-	//v[3].color = sf::Color::White;
+	v[0].color = albedo;
+	v[1].color = albedo;
+	v[2].color = albedo;
+	v[3].color = albedo;
+
+	//v[0].color.a = 0.0;
+	//v[1].color.a = 0.0;
+	//v[2].color.a = 0.0;
+	//v[3].color.a = 0.0;
 
 	v[0].texCoords = sf::Vector2f(region.left, region.top);
 	v[1].texCoords = sf::Vector2f(region.width + region.left, region.top);
 	v[2].texCoords = sf::Vector2f(region.width + region.left, region.height + region.top);
 	v[3].texCoords = sf::Vector2f(region.left, region.height + region.top);
 }
+
+int Location::getTile(const char* layer_name, float x, float y, int replace_tile)
+{
+	for (int i = 0; i < layers.size(); i++) {
+		if (layers[i]->name == layer_name) {
+			std::string tileId = "";
+			int xT = 0;
+			int yT = 0;
+
+			for (int index = 0; index < layers[i]->data.size(); index++) {
+				if (layers[i]->data[index] != ',') {
+					if (layers[i]->data[index] != '\n')
+						tileId += layers[i]->data[index];
+				}
+				else {
+					if (xT == x && yT == y) {
+						if (replace_tile > -1) {
+							layers[i]->data.replace(index - 1, 1, std::to_string(replace_tile));
+
+							//std::cout << layers[i]->data << std::endl;
+						}
+
+						return std::stoi(tileId);
+					}
+
+					if (xT + 1 < mapWidth) {
+						xT++;
+					}
+					else {
+						xT = 0;
+						yT++;
+					}
+
+					tileId = "";
+				}
+			}
+		}
+	}
+
+	return -1;
+}
+
 
 LocationManager::LocationManager()
 {

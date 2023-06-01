@@ -159,9 +159,9 @@ void DialogBox::update()
 
 		sf::Vector2f arrow_next_pos = sf::Vector2f(book_pos.x + (book_rect.width + 10 * 2), book_pos.y);
 
-		sf::FloatRect arrow_next_rect(arrow_next_pos.x, arrow_next_pos.y, 10 * 3, 7 * 3);
+		sf::FloatRect arrow_next_rect(arrow_next_pos.x, arrow_next_pos.y, 10 * 3, 9 * 3);
 
-		batch->draw(Resources::IconsTexture, arrow_next_rect, sf::IntRect(30, 32, 10, 7));
+		batch->draw(Resources::IconsTexture, arrow_next_rect, sf::IntRect(107, 31, 10, 9));
 
 		sf::Vector2f ms = batch->getWindow()->mapPixelToCoords(sf::Vector2i(sf::Mouse::getPosition(*batch->getWindow())));
 

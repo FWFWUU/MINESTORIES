@@ -18,10 +18,13 @@ private:
 
 
 public:
+	sf::VertexArray vArray;
+
 	Font(std::string font_filename, sf::Vector2i grid);
 	Font(sf::Texture* texture, sf::Vector2i grid);
 
 	void drawString(SpriteBatch& batch, const std::string& text, sf::Vector2f offset, int font_size, sf::Color color = sf::Color::White);
+	void drawBuffer(const char* text, sf::Vector2f position, uint16_t fontSize);
 	//void drawChar(SpriteBatch& b, const char c, sf::Vector2f offset, int font_size)
 };
 

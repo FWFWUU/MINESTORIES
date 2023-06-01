@@ -7,5 +7,7 @@ class Player :
 {
 public:
 	Player(std::string name, sf::Vector2f i_pos);
+
+	void update(float dt) override;
 };
 

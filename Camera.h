@@ -6,16 +6,20 @@
 class Camera
 {
 public:
-	sf::View * view;
+	sf::View view;
 	sf::Vector2f direction;
 	sf::Vector2f position;
 	sf::RectangleShape* rect_draw;
-	sf::IntRect* rect;
+
+	sf::RenderWindow* window;
 
 	int camera_view_margin = 100;
 	float smooth_speed = 5.f;
 
-	Camera();
-	void FollowCharacter(Character& chara, sf::RenderWindow& window, float dt);
+	Character* target = nullptr;
+
+	Camera(sf::RenderWindow& w);
+	void attachTarget(Character& c);
+	void update(float dt);
 };
 

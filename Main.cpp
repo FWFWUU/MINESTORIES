@@ -14,23 +14,25 @@
 #include "DialogBox.h"
 #include "Location.h"
 #include "Resources.h"
-
-const std::string GAME_NAME = "Minestories";
-const std::vector<std::string> SUBTITLES{
-	"Pirate edition", "c++ sucks", ":(", "Eita, guapitoo!!"
-};
+#include "Animation.h"
+#include "NPC.h"
 
 class Game {
 public:
+	const sf::String GAME_NAME = "Minestories";
+	const sf::String GAME_VERSION_NAME = "1.0.0";
+
 	sf::RenderWindow* window;
-	sf::Sprite curSprite;
+	
+	sf::Sprite cursorSprite;
+	
 	sf::Image * window_icon;
+
 	sf::IntRect cur_tex_rect;
 
 	Player* player;
-
-	int count_spr_sort = 0;
-	bool paused = false;
+	
+	bool gamePaused = false;
 
 	Camera* camera;
 
@@ -44,42 +46,41 @@ public:
 
 	LocationManager* locationManager;
 
+	float fadeAlpha = 1;
+
 	float framesPerSeconds = 60;
 
 	bool verticalSync = false;
 
 	float framerate = 0;
 
+	bool debugMode = false;
+
+	std::string command;
+
 	Game() {
 		srand(time(NULL)); //generate random seed
 
-		int rand_subtitle_pos = rand() % SUBTITLES.size();
-
-		window = new sf::RenderWindow(sf::VideoMode(1024, 640), GAME_NAME + ": " + SUBTITLES[rand_subtitle_pos]);
-		window->setVerticalSyncEnabled(verticalSync);
-		window->setFramerateLimit(framesPerSeconds);
+		window = new sf::RenderWindow(sf::VideoMode(1024, 640), GAME_NAME + " All copyright " + GAME_VERSION_NAME);
 
 		Resources::Resources();
 
-		window_icon = new sf::Image();
-		window_icon->loadFromFile("Assets/Textures/w_icon.png");
+		//window_icon = new sf::Image();
+		//window_icon->loadFromFile("Assets/Textures/w_icon.png");
 		
-		window->setIcon(16, 16, window_icon->getPixelsPtr());
+		//window->setIcon(16, 16, window_icon->getPixelsPtr());
 
-		cur_tex_rect.height = 8;
-		cur_tex_rect.width = 8;
+		//cur_tex_rect.height = 8;
+		//cur_tex_rect.width = 8;
 		
-		curSprite.setTexture(*Resources::IconsTexture);
-		curSprite.setTextureRect(cur_tex_rect);
-		curSprite.setScale(sf::Vector2f(1.2, 1.2));
+		cursorSprite.setTexture(Resources::IconsTexture);
+		cursorSprite.setTextureRect(sf::IntRect(0,0,8,8));
+		cursorSprite.setScale(sf::Vector2f(1.2, 1.2));
 		
 
-		player = new Player("player", sf::Vector2f(10, 10));
+		player = new Player("player", sf::Vector2f(10, 130));
 
-		camera = new Camera();
-		camera->view->setSize(window->getSize().x / 2, window->getSize().y / 2);
-
-		//res = new Resources;
+		camera = new Camera(*window);
 
 		batch = new SpriteBatch(window);
 
@@ -89,8 +90,6 @@ public:
 		locationManager = new LocationManager;
 		locationManager->loadLocation("Assets/Locations/StartMap.tmx", "Start");
 		locationManager->currentLocation = "Start";
-
-		
 	}
 
 	void sortSprites() {
@@ -102,82 +101,50 @@ public:
 					}
 				}
 			}
-
-			window->draw(*AnimatedSprite::getSpritesList()[i]);
 		}
 
 	}
 
 	void startWorld() {
-		//start world here
-
-		Player* clone;
-		clone = new Player("npc", sf::Vector2f(-30, -30));
+		NPC* npc = new NPC("npc", sf::Vector2f(100, 100));
 	}
 
-	void update(float dt) {
-		//locationManager->draw(window);
+	void draw() {
+		
+		//draw location
 
 		for (int i = 0; i < locationManager->locations.size(); i++) {
 			if (locationManager->locations[i]->name == locationManager->currentLocation) {
-				locationManager->locations[i]->draw();
-
 				for (LocationLayer* layer : locationManager->locations[i]->layers) {
 					window->draw(layer->vArr, &locationManager->locations[i]->texture);
 
-					if (layer->name == "Grass")
-						sortSprites();
-				}
+					if (layer->name == "Grass") {
+						
+						//draw sprites
 
-				camera->FollowCharacter(*player, *window, dt);
+						for (sf::Sprite* s : AnimatedSprite::getSpritesList())
+							window->draw(*s);
 
-				if ((camera->view->getSize().x / 2) + camera->view->getCenter().x > locationManager->locations[i]->mapWidth * locationManager->locations[i]->tileSizeX) {
-					camera->view->setCenter((locationManager->locations[i]->mapWidth * locationManager->locations[i]->tileSizeX) - (camera->view->getSize().x / 2), camera->view->getCenter().y);
-				}
+						//draw cursor
 
-				if (camera->view->getCenter().x < (camera->view->getSize().x / 2) + 0) {
-					camera->view->setCenter((camera->view->getSize().x / 2), camera->view->getCenter().y);
-				}
+						float ceilX = floor(((cursorSprite.getPosition().x + 0) * 4) / (locationManager->locations[i]->mapWidth));
+						float ceilY = floor(((cursorSprite.getPosition().y + 0) * 4) / (locationManager->locations[i]->mapHeight));
 
-				if ((camera->view->getSize().y) + (camera->view->getCenter().y) > locationManager->locations[i]->mapHeight * locationManager->locations[i]->tileSizeY) {
-					camera->view->setCenter(camera->view->getCenter().x, (locationManager->locations[i]->mapHeight * locationManager->locations[i]->tileSizeY) - (camera->view->getSize().y));
-				}
-
-				if (camera->view->getCenter().y < (camera->view->getSize().y / 2) + 0) {
-					camera->view->setCenter(camera->view->getCenter().x, (camera->view->getSize().y / 2));
+						if (locationManager->locations[i]->getTile("Dirt", ceilX, ceilY) > 0) {
+							batch->draw(Resources::IconsTexture, sf::FloatRect(ceilX * 16, ceilY * 16, 16, 16), sf::IntRect(47, 0, 16, 16), sf::Color(255, 255, 255, 155));
+						}
+					}
 				}
 			}
 		}
 
-		physics.update(dt);
-		
+		for (Character* character : Character::getCharactersList()) {
+			character->draw(*window);
 
-		sf::Vector2f impulse;
+			BoundingBox m(1, 1, cursorSprite.getPosition().x, cursorSprite.getPosition().y);
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-			impulse.x = -1;
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-			impulse.x = 1;
-		else
-			impulse.x = 0;
-		
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-			impulse.y = -1;
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-			impulse.y = 1;
-		else
-			impulse.y = 0;
-		
-		player->moveTo(impulse.x, impulse.y);
-
-		for (Character* chara : Character::getCharactersList()) {
-			chara->draw(*window);
-			chara->update(dt);
-
-			BoundingBox m(1, 1, curSprite.getPosition().x, curSprite.getPosition().y);
-
-			if (chara->hitbox->intersects(m)) {
-				Resources::DefaultFont->drawString(*batch, "<" + chara->name + ">", chara->getPivot() - sf::Vector2f(0, 16), 8, sf::Color::Yellow);
+			if (character->hitbox->intersects(m)) {
+				Resources::DefaultFont->drawString(*batch, "<" + character->name + ">", character->getPivot() - sf::Vector2f(0, 16), 8, sf::Color::Yellow);
 
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 					dialog->setCurrentDialog(8, 14);
@@ -186,9 +153,67 @@ public:
 
 		}
 
+		//draw tools bar
+
+		sf::FloatRect r(window->mapPixelToCoords(sf::Vector2i(0, 0)), sf::Vector2f(32, 32));
+
+		batch->draw(Resources::IconsTexture, sf::FloatRect(r.left, r.top, r.width, r.height), sf::IntRect(63, 0, 16, 17));
+		for (int i = 0; i < 6; i++)
+			batch->draw(Resources::IconsTexture, sf::FloatRect((32 * i) + r.left + r.width, r.top, r.width, r.height), sf::IntRect(63 + 16, 0, 16, 17));
+		batch->draw(Resources::IconsTexture, sf::FloatRect((32 * 7) + r.left, r.top, r.width, r.height), sf::IntRect(63 + 32, 0, 16, 17));
+
+		//draw command input
+
+		if (debugMode) {
+			Resources::DefaultFont->drawString(*batch, ">" + command + "<", window->mapPixelToCoords(sf::Vector2i(0, window->getView().getSize().y - 8)), 8);
+		}
+
+		window->draw(cursorSprite);
+	}
+
+	void update(float dt) {
+		camera->attachTarget(*player);
+		camera->update(dt);
+
+		sortSprites();
+
+		//build current location
+
+		for (int i = 0; i < locationManager->locations.size(); i++) {
+			if (locationManager->locations[i]->name == locationManager->currentLocation) {
+				locationManager->locations[i]->build();
+
+				//set camera limits
+
+				if ((camera->view.getSize().x / 2) + camera->view.getCenter().x > locationManager->locations[i]->mapWidth * locationManager->locations[i]->tileSizeX) {
+					camera->view.setCenter((locationManager->locations[i]->mapWidth * locationManager->locations[i]->tileSizeX) - (camera->view.getSize().x / 2), camera->view.getCenter().y);
+				}
+
+				if (camera->view.getCenter().x < (camera->view.getSize().x / 2) + 0) {
+					camera->view.setCenter((camera->view.getSize().x / 2), camera->view.getCenter().y);
+				}
+
+				if ((camera->view.getSize().y) + (camera->view.getCenter().y) > locationManager->locations[i]->mapHeight * locationManager->locations[i]->tileSizeY) {
+					camera->view.setCenter(camera->view.getCenter().x, (locationManager->locations[i]->mapHeight * locationManager->locations[i]->tileSizeY) - (camera->view.getSize().y));
+				}
+
+				if (camera->view.getCenter().y < (camera->view.getSize().y / 2) + 0) {
+					camera->view.setCenter(camera->view.getCenter().x, (camera->view.getSize().y / 2));
+				}
+			}
+		}
+
+		//update characters
+
+		for (Character* character : Character::getCharactersList())
+			character->update(dt);
+
 		dialog->update();
 
-		Resources::DefaultFont->drawString(*batch, std::to_string((int)framerate), window->mapPixelToCoords(sf::Vector2i(0, 0)), 8, sf::Color(255, 255, 255, 155));
+		//Temporary HUD
+
+		window->setTitle(GAME_NAME + " fps:" + std::to_string((int)framerate));
+		//Resources::DefaultFont->drawString(*batch, std::to_string((int)framerate), window->mapPixelToCoords(sf::Vector2i(0, 0)), 8, sf::Color(255, 255, 255, 155));
 	}
 
 	void Listen(sf::Event& event) {
@@ -196,7 +221,7 @@ public:
 			this->window->close();
 		}
 		if (event.type == sf::Event::Resized) {
-			this->camera->view->setSize(sf::Vector2f(window->getSize().x / 2, window->getSize().y / 2));
+			this->camera->view.setSize(sf::Vector2f(window->getSize().x / 2, window->getSize().y / 2));
 		}
 		if (event.type == sf::Event::MouseEntered) {
 			this->window->setMouseCursorVisible(false);
@@ -205,7 +230,10 @@ public:
 			this->window->setMouseCursorVisible(true);
 		}
 		if (event.type == sf::Event::LostFocus) {
-			paused = true;
+			gamePaused = true;
+		}
+		if (event.type == sf::Event::GainedFocus) {
+			gamePaused = false;
 		}
 
 		if (event.type == sf::Event::MouseButtonPressed) {
@@ -214,9 +242,46 @@ public:
 					if (dialog->touchNext == true)
 						dialog->nextDialogue();
 		}
+
+		if (event.type == sf::Event::KeyPressed) {
+			if (event.key.code == sf::Keyboard::Slash) debugMode = !debugMode;
+		}
+
+		if (debugMode) {
+			if (event.type == sf::Event::KeyPressed) {
+				switch (event.key.code) {
+					case sf::Keyboard::Backspace:
+						if (command.size() > 0) command.pop_back();
+						break;
+
+					case sf::Keyboard::A:
+						command += "a";
+						break;
+
+					case sf::Keyboard::B:
+						command += "b";
+						break;
+
+					case sf::Keyboard::C:
+						command += "c";
+						break;
+
+					case sf::Keyboard::D:
+						command += "d";
+						break;
+
+					case sf::Keyboard::E:
+						command += "e";
+						break;
+				}
+			}
+		}
 	}
 
 	void run() {
+		window->setVerticalSyncEnabled(verticalSync);
+		window->setFramerateLimit(framesPerSeconds);
+
 		while (window->isOpen()) {
 			sf::Event e;
 			
@@ -224,17 +289,16 @@ public:
 				Listen(e);
 			}
 
-			curSprite.setPosition(window->mapPixelToCoords(sf::Mouse::getPosition(*window)));
-
-			window->setView(*camera->view);
-			
 			window->clear();
+
+			draw();
 
 			framerate = 1 / deltaTime.getElapsedTime().asSeconds();
 
-			update(deltaTime.restart().asSeconds());	
-
-			window->draw(curSprite);
+			if (gamePaused == false)
+				update(deltaTime.restart().asSeconds());
+			
+			cursorSprite.setPosition(window->mapPixelToCoords(sf::Mouse::getPosition(*window)));
 
 			window->display();
 		}

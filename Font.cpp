@@ -12,6 +12,9 @@ Font::Font(sf::Texture* texture, sf::Vector2i grid)
 	fontTexture = texture;
 
 	grid_size = grid;
+
+	//vArray.setPrimitiveType(sf::Quads);
+	//vArray.resize()
 }
 
 void Font::drawString(SpriteBatch& batch, const std::string& text, sf::Vector2f offset, int font_size, sf::Color color)
@@ -23,7 +26,7 @@ void Font::drawString(SpriteBatch& batch, const std::string& text, sf::Vector2f 
 		
 
 		if (char_index != std::string::npos) {
-			batch.draw(fontTexture, sf::FloatRect(((i * (font_size)) + offset.x), offset.y, font_size, font_size), sf::IntRect(char_index * grid_size.x, 0, grid_size.x, grid_size.y), c_color);
+			batch.draw(*fontTexture, sf::FloatRect(((i * (font_size)) + offset.x), offset.y, font_size, font_size), sf::IntRect(char_index * grid_size.x, 0, grid_size.x, grid_size.y), c_color);
 		}
 		else {
 			if (text[i] == ESPECIAL_COLOR_RED)
@@ -33,4 +36,9 @@ void Font::drawString(SpriteBatch& batch, const std::string& text, sf::Vector2f 
 				c_color = sf::Color::Yellow;
 		}
 	}
+}
+
+void Font::drawBuffer(const char* text, sf::Vector2f position, uint16_t fontSize)
+{
+
 }

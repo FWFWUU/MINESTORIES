@@ -6,39 +6,63 @@ AnimatedSprite::AnimatedSprite() {
 	sprites_list.push_back(this);
 }
 
-void AnimatedSprite::AddRegion(sf::IntRect region) {
+/*void AnimatedSprite::AddRegion(const sf::IntRect& region) {
 	regions.push_back(region);
+}*/
+
+AnimationFrame* AnimatedSprite::AddAnimation(const std::string& name, sf::Texture& texture)
+{
+	for (AnimationFrame* frame : frames) {
+		if (frame->name == name)
+			return frame;
+	}
+	
+	AnimationFrame* frame = new AnimationFrame;
+	frame->name = name;
+	frame->texture = &texture;
+	frames.push_back(frame);
+
+	return frames.back();
 }
 
-void AnimatedSprite::AddTextureImage(sf::Texture* texture) {
-	setTexture(*texture, true);
+void AnimatedSprite::AddTextureImage(sf::Texture& texture) {
+	setTexture(texture, true);
 }
 
 void AnimatedSprite::PlayAnimation(bool loop) {
-	if (playing) {
-		if (timer.getElapsedTime().asSeconds() > time) {
-			if (region_index < regions.size() - 1) {
-				region_index++;
+	for (AnimationFrame* frame : frames) {
+			if (frame->name == currentAnimation) {
+				setTexture(*frame->texture, true);
 
-				timer.restart();
-			}
-			else {
-				if (loop)
+				if (region_index < frame->regions.size())
 				{
-					region_index = 0;
-					timer.restart();
+					setTextureRect(frame->regions[region_index]);
+
+					setOrigin(getTextureRect().width / 2, getTextureRect().height / 2);
 				}
 
+				if (playing) {
+					if (timer.getElapsedTime().asSeconds() > time) {
+						if (region_index < frame->regions.size() - 1) {
+							region_index++;
+
+							timer.restart();
+						}
+						else {
+							if (loop)
+							{
+								region_index = 0;
+								timer.restart();
+							}
+
+						}
+					}
+				}
+				else {
+					region_index = 0;
+				}
 			}
 		}
-
-		if (region_index < regions.size())
-		{
-			setTextureRect(regions[region_index]);
-			
-			//setOrigin(getTextureRect().width / 2, getTextureRect().height / 2);
-		}
-	}	
 }
 
 std::vector<sf::Sprite*> AnimatedSprite::getSpritesList()

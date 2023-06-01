@@ -1,6 +1,6 @@
 #include "Character.h"
 
-std::vector<Character*> Character::chars_list;
+std::vector<Character*> Character::characters;
 
 
 void Character::moveTo(float dx, float dy) {
@@ -17,7 +17,12 @@ void Character::moveSingleAxis(float dx, float dy) {
 	hitbox->x += velocity.x;
 	hitbox->y += velocity.y;
 
-	for (Character* chara : chars_list) {
+	bool collides = false;
+
+	//hitbox->x = (globalPosition.x - 32);
+	//hitbox->y = (globalPosition.y);
+
+	for (Character* chara : characters) {
 		if (chara != this) {
 			if (hitbox) {
 				if (chara->hitbox) {
@@ -33,21 +38,23 @@ void Character::moveSingleAxis(float dx, float dy) {
 
 						if (dy < 0)
 							hitbox->y = chara->hitbox->bottom();
+						
+						collides = true;
 					}
 				}
 			}
 		}
 	}
+
+	if (!collides) {
+		globalPosition.x += velocity.x;
+		globalPosition.y += velocity.y;
+	}
 }
 
-sf::Vector2f Character::getPivot() const
+sf::Vector2f Character::getPivot()
 {
-	return sprite->getOrigin() + sf::Vector2f(hitbox->x, hitbox->y);
-}
-
-void Character::setObject(Object2D& obj)
-{
-	object = &obj;
+	return localPosition;
 }
 
 void Character::draw(sf::RenderWindow& window) {
@@ -55,23 +62,32 @@ void Character::draw(sf::RenderWindow& window) {
 }
 
 void Character::update(float dt) {
+	//std::cout << name << "=" << localPosition.y << std::endl;
+
 	if (hitbox) {
+
 		//pos_in_world.x = hitbox->x - (hitbox->width / 2);
 		//pos_in_world.y = hitbox->y - (hitbox->height / 2);
 
-		rr->setPosition(getPivot());
+		//hitbox->x = hitbox->x + (20 / 2);
+		//hitbox->x = localPosition.x;
+		//hitbox->y = localPosition.y;
+
 		rr->setSize(sf::Vector2f(hitbox->width, hitbox->height));
 		rr->setFillColor(sf::Color::Transparent);
-		rr->setOutlineThickness(1.0);
+		rr->setOutlineThickness(0.5);
 		rr->setOutlineColor(sf::Color::Green);
+		//rr->setOrigin(globalPosition);
 
-		sprite->setPosition(sf::Vector2f(hitbox->x, hitbox->y));
-
+		rr->setPosition(hitbox->x, hitbox->y);
 	}
+
+	//sprite->setOrigin(globalPosition.x - sprite.get)
+	sprite->setPosition(globalPosition);
 
 	sprite->PlayAnimation(true);
 }
 
 std::vector<Character*> Character::getCharactersList() {
-	return chars_list;
+	return characters;
 }

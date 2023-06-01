@@ -37,8 +37,9 @@ public:
 
 	Location();
 	void load(const char* location_file, const char* location_name);
-	void draw();
-	void drawTile(sf::VertexArray& vArr, sf::Vector2i pos, sf::IntRect region);
+	void build();
+	void drawTile(sf::VertexArray& vArr, sf::Vector2i pos, sf::IntRect region, sf::Color albedo = sf::Color::White);
+	int getTile(const char* layer_name, float x, float y, int replace_tile = -1);
 
 	sf::Texture texture;
 };

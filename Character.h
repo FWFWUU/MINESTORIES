@@ -9,16 +9,24 @@
 
 class Character {
 private:
-	static std::vector<Character*> chars_list;
-	Object2D* object = nullptr;
+	static std::vector<Character*> characters;
 
 public:
-	sf::Vector2f pos_in_world;
+	sf::Vector2f pos_in_world; //position
+
+	sf::Vector2f localPosition = sf::Vector2f(0, 0); //pivot
+	sf::Vector2f globalPosition = sf::Vector2f(0, 0); //position
+	
 	std::string name;
+	
 	sf::Vector2f impulse;
-	sf::Vector2f velocity;
+	
+	sf::Vector2f velocity; //acceleration
+	
 	AnimatedSprite* sprite;
+	
 	BoundingBox* hitbox = nullptr;
+	
 	sf::RectangleShape* rr = nullptr;
 
 	float speed = 2.0f;
@@ -32,21 +40,24 @@ public:
 
 	uint8_t faceDirection = DirectionBackward;
 
-	Character(std::string name, sf::Vector2f i_pos) : name(name), pos_in_world(i_pos) {
-		Character::chars_list.push_back(this);
+	Character(std::string name, sf::Vector2f i_pos) : name(name), globalPosition(i_pos) {
+		Character::characters.push_back(this);
 
 		sprite = new AnimatedSprite();
+		sprite->setPosition(globalPosition);
 
 		rr = new sf::RectangleShape(sf::Vector2f(32, 32));
+		rr->setPosition(globalPosition);
+
+		hitbox = new BoundingBox(8, 32 / 2, globalPosition.x - (8 / 2), globalPosition.y);
 	};
 
 	void moveTo(float dx, float dy);
-	void setObject(Object2D& object);
 	void draw(sf::RenderWindow& window);
-	void update(float dt);
+	virtual void update(float dt);
 	void moveSingleAxis(float dx, float dy);
 
-	sf::Vector2f getPivot() const;
+	sf::Vector2f getPivot();
 
 	static std::vector<Character*> getCharactersList();
 };

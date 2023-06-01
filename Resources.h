@@ -8,10 +8,10 @@
 class Resources
 {
 public:
-	static sf::Texture* CharactersTexture;
-	static sf::Texture* IconsTexture;
-	static sf::Texture* TerrainTexture;
-	static sf::Texture* FontTexture;
+	static sf::Texture CharactersTexture;
+	static sf::Texture IconsTexture;
+	static sf::Texture TerrainTexture;
+	static sf::Texture FontTexture;
 
 	static Font* DefaultFont;
 	
